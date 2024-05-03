@@ -1,39 +1,57 @@
-import contactsService from "../services/contactsServices.js";
-import fs from "node:fs/promises";
-import { nanoid } from "nanoid";
-import path from "node:path";
+// import contactsService from "../services/contactsServices.js";
+import {
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+} from "../services/contactsServices.js";
 
-const contactsPath = path.join(
-  path.dirname("contactsControllers.js"),
-  "db/contacts.json"
-);
+export const getAllContacts = async (req, res) => {
+  res.json({
+    status: "sucess",
+    code: 200,
+    data: await listContacts(),
+  });
+};
 
-export async function listContacts() {
-  const contacts = await fs.readFile(contactsPath);
-  return JSON.parse(contacts);
-}
+export const getOneContact = async (req, res) => {
+  const contact = await getContactById(req.params.id);
 
-export async function getContactById(contactId) {
-  const contacts = await listContacts();
-  const contactById = contacts.find((contact) => contact.id === contactId);
-  return contactById || null;
-}
+  if (!contact) {
+    res.status(404).json({
+      status: "error",
+      code: 404,
+      message: "Not found",
+    });
+    return;
+  }
 
-export async function removeContact(contactId) {
-  const contacts = await listContacts();
-  const contactIdx = contacts.findIndex((contact) => contact.id === contactId);
+  res.json({
+    status: "success",
+    code: 200,
+    data: contact,
+  });
+};
 
-  if (contactIdx === -1) return null;
+export const deleteContact = async (req, res) => {
+  const contact = await removeContact(req.params.id);
 
-  const deletedContact = contacts.splice(contactIdx, 1);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return deletedContact;
-}
+  if (!contact) {
+    res.status(404).json({
+      status: "error",
+      code: 404,
+      message: "Not found",
+    });
+    return;
+  }
 
-export async function addContact(name, email, phone) {
-  const contacts = await listContacts();
-  const newContact = { id: nanoid(), name, email, phone };
-  contacts.push(newContact);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return newContact;
-}
+  res.json({
+    status: "success",
+    code: 200,
+    data: contact,
+  });
+};
+
+export const createContact = (req, res) => {};
+
+export const updateContact = (req, res) => {};
