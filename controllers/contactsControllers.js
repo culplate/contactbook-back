@@ -33,20 +33,20 @@ export const deleteContact = async (req, res) => {
 };
 
 export const createContact = async (req, res) => {
-  const contact = {
+  const reqContact = {
     name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,
   };
 
-  const { error, value } = createContactSchema.validate(contact);
+  const { error, value } = createContactSchema.validate(reqContact);
 
   if (error) {
     res.status(400).send({ message: error.message });
     return;
   }
-  await addContact(value);
-  res.status(201).send(value);
+  const contact = await addContact(value);
+  res.status(201).send(contact);
 };
 
 export const updateContact = (req, res) => {};
