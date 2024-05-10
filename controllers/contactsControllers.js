@@ -2,6 +2,7 @@ import {
   createContactSchema,
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
+import Contact from "../models/contact.js";
 
 import {
   listContacts,
@@ -43,6 +44,7 @@ export const createContact = async (req, res) => {
     email: req.body.email,
     phone: req.body.phone,
   };
+
   const { error, value } = createContactSchema.validate(reqContact);
 
   if (error) {
