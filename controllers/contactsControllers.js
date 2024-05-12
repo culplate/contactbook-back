@@ -1,6 +1,7 @@
 import {
   createContactSchema,
   updateContactSchema,
+  toggleFavoriteSchema,
 } from "../schemas/contactsSchemas.js";
 
 import Contact from "../models/contact.js";
@@ -90,4 +91,29 @@ export const updateContact = async (req, res, next) => {
   }
 };
 
-export const toggleFavoriteContact = async (req, res) => {};
+export const updateStatusContact = async (req, res, next) => {
+  try {
+    const reqFav = req.body;
+    const { error, value } = toggleFavoriteSchema.validate(reqFav);
+
+    if (error) {
+      return res.status(400).send({ message: error.message });
+    } else if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    const contact = await Contact.findOneAndUpdate(
+      { _id: req.params.id },
+      value,
+      { new: true }
+    );
+
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    return res.status(200).send(contact);
+  } catch (e) {
+    next(e);
+  }
+};

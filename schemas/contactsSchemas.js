@@ -42,3 +42,10 @@ export const updateContactSchema = Joi.object({
       "string.max": "Maximal number length is 15",
     }),
 });
+
+export const toggleFavoriteSchema = Joi.object({
+  favorite: Joi.boolean().required().messages({
+    "any.required": "Favorite value is required",
+    "boolean.base": "Must be boolean value",
+  }),
+});
