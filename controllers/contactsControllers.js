@@ -2,75 +2,92 @@ import {
   createContactSchema,
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
+
 import Contact from "../models/contact.js";
 
-import {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContactById,
-} from "../services/contactsServices.js";
+import mongoose from "mongoose";
 
-export const getAllContacts = async (req, res) => {
-  res.status(200).send({ data: await listContacts() });
+export const getAllContacts = async (req, res, next) => {
+  try {
+    const contacts = await Contact.find();
+    return res.status(200).send({ data: contacts });
+  } catch (e) {
+    next(e);
+  }
 };
 
-export const getOneContact = async (req, res) => {
-  const contact = await getContactById(req.params.id);
+export const getOneContact = async (req, res, next) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send({ message: "Not found" });
+    }
 
-  if (!contact) {
-    res.status(404).send({ message: "Not found" });
-    return;
+    const contact = await Contact.findById(req.params.id);
+    return res.status(200).send({ data: contact });
+  } catch (e) {
+    next(e);
   }
-
-  res.status(200).send({ data: contact });
 };
 
-export const deleteContact = async (req, res) => {
-  const contact = await removeContact(req.params.id);
+export const deleteContact = async (req, res, next) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send({ message: "Not found" });
+    }
 
-  if (!contact) {
-    res.status(404).send({ message: "Not found" });
-    return;
+    const contact = await Contact.findByIdAndDelete(req.params.id);
+
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    return res.status(200).send({ data: contact });
+  } catch (e) {
+    next(e);
   }
-
-  res.status(200).send({ data: contact });
 };
 
-export const createContact = async (req, res) => {
-  const reqContact = {
-    name: req.body.name,
-    email: req.body.email,
-    phone: req.body.phone,
-  };
+export const createContact = async (req, res, next) => {
+  try {
+    const reqContact = req.body;
+    const { error, value } = createContactSchema.validate(reqContact);
 
-  const { error, value } = createContactSchema.validate(reqContact);
+    if (error) {
+      return res.status(400).send({ message: error.message });
+    }
 
-  if (error) {
-    res.status(400).send({ message: error.message });
-    return;
+    const contact = await Contact.create(value);
+    return res.status(201).send(contact);
+  } catch (e) {
+    next(e);
   }
-
-  const contact = await addContact(value);
-  res.status(201).send(contact);
 };
 
-export const updateContact = async (req, res) => {
-  const reqContact = req.body;
-  const { error, value } = updateContactSchema.validate(reqContact);
+export const updateContact = async (req, res, next) => {
+  try {
+    const reqContact = req.body;
+    const { error, value } = updateContactSchema.validate(reqContact);
 
-  if (error) {
-    res.status(400).send({ message: error.message });
-    return;
+    if (error) {
+      return res.status(400).send({ message: error.message });
+    } else if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    const contact = await Contact.findOneAndUpdate(
+      { _id: req.params.id },
+      value,
+      { new: true }
+    );
+
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    return res.status(200).send(contact);
+  } catch (e) {
+    next(e);
   }
-
-  const contact = await updateContactById(req.params.id, value);
-
-  if (!contact) {
-    res.status(404).send({ message: "Not found" });
-    return;
-  }
-
-  res.status(200).send(contact);
 };
+
+export const toggleFavoriteContact = async (req, res) => {};
