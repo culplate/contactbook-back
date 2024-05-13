@@ -24,6 +24,10 @@ export const getOneContact = async (req, res, next) => {
     }
 
     const contact = await Contact.findById(req.params.id);
+
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
     return res.status(200).send({ data: contact });
   } catch (e) {
     next(e);
