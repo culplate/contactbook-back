@@ -43,17 +43,16 @@ export const deleteContact = async (req, res, next) => {
       return res.status(404).send({ message: "Not found" });
     }
 
-    const contact = await Contact.findById(req.params.id);
+    const contact = await Contact.findOneAndDelete({
+      _id: req.params.id,
+      owner: req.user.id,
+    });
 
     if (!contact) {
       return res.status(404).send({ message: "Not found" });
-    } else if (contact.owner.toString() !== req.user.id) {
-      return res.status(404).send({ message: "Not found" });
     }
 
-    const deletedContact = await Contact.findByIdAndDelete(req.params.id);
-
-    return res.status(200).send({ data: deletedContact });
+    return res.status(200).send({ data: contact });
   } catch (e) {
     next(e);
   }
@@ -86,21 +85,17 @@ export const updateContact = async (req, res, next) => {
       return res.status(404).send({ message: "Not found" });
     }
 
-    const contact = await Contact.findById(req.params.id);
-
-    if (!contact) {
-      return res.status(404).send({ message: "Not found" });
-    } else if (contact.owner.toString() !== req.user.id) {
-      return res.status(404).send({ message: "Not found" });
-    }
-
-    const updatedContact = await Contact.findOneAndUpdate(
-      { _id: req.params.id },
+    const contact = await Contact.findOneAndUpdate(
+      { _id: req.params.id, owner: req.user.id },
       value,
       { new: true }
     );
 
-    return res.status(200).send(updatedContact);
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    return res.status(200).send(contact);
   } catch (e) {
     next(e);
   }
@@ -117,21 +112,17 @@ export const updateStatusContact = async (req, res, next) => {
       return res.status(404).send({ message: "Not found" });
     }
 
-    const contact = await Contact.findById(req.params.id);
-
-    if (!contact) {
-      return res.status(404).send({ message: "Not found" });
-    } else if (contact.owner.toString() !== req.user.id) {
-      return res.status(404).send({ message: "Not found" });
-    }
-
-    const updatedContact = await Contact.findOneAndUpdate(
-      { _id: req.params.id },
+    const contact = await Contact.findOneAndUpdate(
+      { _id: req.params.id, owner: req.user.id },
       value,
       { new: true }
     );
 
-    return res.status(200).send(updatedContact);
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    return res.status(200).send(contact);
   } catch (e) {
     next(e);
   }
