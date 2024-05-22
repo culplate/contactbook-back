@@ -7,6 +7,7 @@ import routes from "./routes/index.js";
 import "./db/db.js";
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(morgan("tiny"));
 app.use(cors());
@@ -22,6 +23,6 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-app.listen(3000, () => {
-  console.log("Server is running. Use our API on port: 3000");
+app.listen(PORT, () => {
+  console.log(`Server is running. Use our API on port: ${PORT}`);
 });

@@ -3,13 +3,11 @@ import User from "../models/user.js";
 
 export const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-
   if (typeof authHeader === "undefined") {
     return res.status(401).send({ message: "Not authorized" });
   }
 
   const [bearer, token] = authHeader.split(" ", 2);
-
   if (bearer !== "Bearer") {
     return res.status(401).send({ message: "Not authorized" });
   }

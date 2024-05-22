@@ -3,9 +3,7 @@ import {
   updateContactSchema,
   toggleFavoriteSchema,
 } from "../schemas/contactsSchemas.js";
-
 import Contact from "../models/contact.js";
-
 import mongoose from "mongoose";
 
 export const getAllContacts = async (req, res, next) => {
