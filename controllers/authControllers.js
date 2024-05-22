@@ -64,6 +64,8 @@ export const loginUser = async (req, res, next) => {
       { expiresIn: 60 * 60 }
     );
 
+    await User.findByIdAndUpdate(user._id, { token });
+
     return res.status(200).send({
       token,
       user: {
@@ -76,4 +78,11 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
-export const logoutUser = (req, res, next) => {};
+export const logoutUser = async (req, res, next) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { token: null });
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+};
