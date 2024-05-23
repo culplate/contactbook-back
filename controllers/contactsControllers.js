@@ -1,39 +1,127 @@
-import contactsService from "../services/contactsServices.js";
-import fs from "node:fs/promises";
-import { nanoid } from "nanoid";
-import path from "node:path";
+import {
+  createContactSchema,
+  updateContactSchema,
+  toggleFavoriteSchema,
+} from "../schemas/contactsSchemas.js";
+import Contact from "../models/contact.js";
+import mongoose from "mongoose";
 
-const contactsPath = path.join(
-  path.dirname("contactsControllers.js"),
-  "db/contacts.json"
-);
+export const getAllContacts = async (req, res, next) => {
+  try {
+    const contacts = await Contact.find({ owner: req.user.id });
+    return res.status(200).send({ data: contacts });
+  } catch (e) {
+    next(e);
+  }
+};
 
-export async function listContacts() {
-  const contacts = await fs.readFile(contactsPath);
-  return JSON.parse(contacts);
-}
+export const getOneContact = async (req, res, next) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send({ message: "Not found" });
+    }
 
-export async function getContactById(contactId) {
-  const contacts = await listContacts();
-  const contactById = contacts.find((contact) => contact.id === contactId);
-  return contactById || null;
-}
+    const contact = await Contact.findById(req.params.id);
 
-export async function removeContact(contactId) {
-  const contacts = await listContacts();
-  const contactIdx = contacts.findIndex((contact) => contact.id === contactId);
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    } else if (contact.owner.toString() !== req.user.id) {
+      return res.status(404).send({ message: "Not found" });
+    }
 
-  if (contactIdx === -1) return null;
+    return res.status(200).send({ data: contact });
+  } catch (e) {
+    next(e);
+  }
+};
 
-  const deletedContact = contacts.splice(contactIdx, 1);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return deletedContact;
-}
+export const deleteContact = async (req, res, next) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send({ message: "Not found" });
+    }
 
-export async function addContact(name, email, phone) {
-  const contacts = await listContacts();
-  const newContact = { id: nanoid(), name, email, phone };
-  contacts.push(newContact);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return newContact;
-}
+    const contact = await Contact.findOneAndDelete({
+      _id: req.params.id,
+      owner: req.user.id,
+    });
+
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    return res.status(200).send({ data: contact });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const createContact = async (req, res, next) => {
+  try {
+    const reqContact = req.body;
+    const { error, value } = createContactSchema.validate(reqContact);
+
+    if (error) {
+      return res.status(400).send({ message: error.message });
+    }
+
+    const contact = await Contact.create({ ...value, owner: req.user.id });
+    return res.status(201).send(contact);
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const updateContact = async (req, res, next) => {
+  try {
+    const reqContact = req.body;
+    const { error, value } = updateContactSchema.validate(reqContact);
+
+    if (error) {
+      return res.status(400).send({ message: error.message });
+    } else if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    const contact = await Contact.findOneAndUpdate(
+      { _id: req.params.id, owner: req.user.id },
+      value,
+      { new: true }
+    );
+
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    return res.status(200).send(contact);
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const updateStatusContact = async (req, res, next) => {
+  try {
+    const reqFav = req.body;
+    const { error, value } = toggleFavoriteSchema.validate(reqFav);
+
+    if (error) {
+      return res.status(400).send({ message: error.message });
+    } else if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    const contact = await Contact.findOneAndUpdate(
+      { _id: req.params.id, owner: req.user.id },
+      value,
+      { new: true }
+    );
+
+    if (!contact) {
+      return res.status(404).send({ message: "Not found" });
+    }
+
+    return res.status(200).send(contact);
+  } catch (e) {
+    next(e);
+  }
+};
