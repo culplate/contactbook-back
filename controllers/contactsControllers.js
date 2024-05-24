@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 export const getAllContacts = async (req, res, next) => {
   try {
     const contacts = await Contact.find({ owner: req.user.id });
-    return res.status(200).send({ data: contacts });
+    return res.status(200).send(contacts);
   } catch (e) {
     next(e);
   }
@@ -29,7 +29,7 @@ export const getOneContact = async (req, res, next) => {
       return res.status(404).send({ message: "Not found" });
     }
 
-    return res.status(200).send({ data: contact });
+    return res.status(200).send(contact);
   } catch (e) {
     next(e);
   }
@@ -50,7 +50,7 @@ export const deleteContact = async (req, res, next) => {
       return res.status(404).send({ message: "Not found" });
     }
 
-    return res.status(200).send({ data: contact });
+    return res.status(200).send(contact);
   } catch (e) {
     next(e);
   }
