@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(morgan("tiny"));
 app.use(cors());
 
+app.use("/avatars", express.static("public/avatars"));
 app.use("/api", routes);
 
 app.use((_, res) => {
