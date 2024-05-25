@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 import {
   registerUserSchema,
   loginUserSchema,
@@ -22,9 +23,14 @@ export const registerUser = async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(value.password, 10);
+
+    //TODO move it to helpers
+    const avatar = gravatar.url(value.email, { s: "250", d: "mp" }, true);
+
     const result = await User.create({
       email: value.email,
       password: passwordHash,
+      avatarUrl: avatar,
     });
 
     return res.status(201).send({
@@ -70,6 +76,7 @@ export const loginUser = async (req, res, next) => {
       user: {
         email: user.email,
         subscription: user.subscription,
+        avatarUrl: user.avatarUrl,
       },
     });
   } catch (e) {
@@ -94,9 +101,11 @@ export const getCurrentUser = async (req, res, next) => {
       return res.status(401).send({ message: "Not authorized" });
     }
 
-    return res
-      .status(200)
-      .send({ email: user.email, subscription: user.subscription });
+    return res.status(200).send({
+      email: user.email,
+      subscription: user.subscription,
+      avatarUrl: user.avatarUrl,
+    });
   } catch (e) {
     next(e);
   }
