@@ -1,12 +1,14 @@
 import express from "express";
-import { updateAvatar } from "../controllers/userControllers.js";
+import { getAvatar, updateAvatar } from "../controllers/userControllers.js";
 import { authMiddleware } from "../middlewares/auth.js";
 import { avatarUploadMiddleware } from "../middlewares/avatarUpload.js";
+import user from "../models/user.js";
 
 const userRouter = express.Router();
 
+userRouter.get("/avatars", authMiddleware, getAvatar);
 userRouter.patch(
-  "/avatar",
+  "/avatars",
   authMiddleware,
   avatarUploadMiddleware,
   updateAvatar
