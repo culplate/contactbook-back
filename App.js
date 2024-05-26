@@ -3,6 +3,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import routes from "./routes/index.js";
+import path from "node:path";
 
 import "./db/db.js";
 
@@ -12,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(morgan("tiny"));
 app.use(cors());
 
-app.use("/avatars", express.static("public/avatars"));
+app.use("/api/avatars", express.static(path.resolve("public/avatars")));
 app.use("/api", routes);
 
 app.use((_, res) => {
