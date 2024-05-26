@@ -44,12 +44,10 @@ export const updateAvatar = async (req, res, next) => {
       return res.status(404).send({ message: "User not found" });
     }
 
-    return res
-      .status(200)
-      .send({
-        message: "Avatar updated",
-        avatarUrl: `/avatars/${user.avatarUrl}`,
-      });
+    return res.status(200).send({
+      message: "Avatar updated",
+      avatarUrl: user.avatarUrl,
+    });
   } catch (e) {
     if (e instanceof multer.MulterError) {
       return res.status(400).send({ message: e.message });
