@@ -16,7 +16,7 @@ export const getAvatar = async (req, res, next) => {
       return res.status(404).send({ message: "Avatar not found" });
     }
 
-    res.sendFile(path.resolve("public/avatars", user.avatarUrl));
+    res.sendFile(path.resolve("public" + user.avatarUrl));
   } catch (e) {
     next(e);
   }
@@ -46,13 +46,14 @@ export const updateAvatar = async (req, res, next) => {
     );
 
     // deleting old avatar
+    //TODO make proper checks if fiel exists
     if (user.avatarUrl !== null) {
-      await fs.unlink(path.resolve("public/avatars/", user.avatarUrl));
+      await fs.unlink(path.resolve("public" + user.avatarUrl));
     }
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
-      { avatarUrl: req.file.filename },
+      { avatarUrl: `/avatars/${req.file.filename}` },
       { new: true }
     );
     if (updatedUser === null) {
@@ -60,7 +61,6 @@ export const updateAvatar = async (req, res, next) => {
     }
 
     return res.status(200).send({
-      message: "Avatar updated",
       avatarUrl: updatedUser.avatarUrl,
     });
   } catch (e) {
