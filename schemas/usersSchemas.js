@@ -33,3 +33,15 @@ export const loginUserSchema = Joi.object({
     "string.max": "Email or password is wrong",
   }),
 });
+
+export const emailSchema = Joi.object({
+  email: Joi.string()
+    .required()
+    .trim()
+    .lowercase()
+    .email({ minDomainSegments: 2 })
+    .messages({
+      "any.required": "Email is required.",
+      "string.email": "Invalid email.",
+    }),
+});
