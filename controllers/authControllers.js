@@ -6,6 +6,7 @@ import {
   registerUserSchema,
   loginUserSchema,
 } from "../schemas/usersSchemas.js";
+import { sendMail } from "../helpers/mail.js";
 
 export const registerUser = async (req, res, next) => {
   const reqData = req.body;
@@ -23,6 +24,7 @@ export const registerUser = async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(value.password, 10);
+    const verificationToken = crypto.randomUUID();
 
     //TODO move it to helpers
     const avatar = gravatar.url(value.email, { s: "250", d: "mp" }, true);
@@ -31,6 +33,16 @@ export const registerUser = async (req, res, next) => {
       email: value.email,
       password: passwordHash,
       avatarUrl: avatar,
+      verificationToken,
+    });
+
+    //TODO put message template to another file
+    sendMail({
+      to: value.email,
+      from: "culplate@gmail.com",
+      subject: "Welcome to ContactBook!",
+      html: `To finish registration, please, click the <a href='http://localhost:${process.env.PORT}/api/users/verify/${verificationToken}'>link</a>`,
+      text: `To finish registration, please, click the <a href='http://localhost:${process.env.PORT}/api/users/verify/${verificationToken}'>link</a>`,
     });
 
     return res.status(201).send({
@@ -61,6 +73,10 @@ export const loginUser = async (req, res, next) => {
     const passwordIsValid = await bcrypt.compare(value.password, user.password);
     if (!passwordIsValid) {
       return res.status(401).send({ message: "Email or password is wrong" });
+    }
+
+    if (user.verify === false) {
+      return res.status(401).send({ message: "Please verify your email" });
     }
 
     const token = jwt.sign(
