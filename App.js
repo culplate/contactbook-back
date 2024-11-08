@@ -11,7 +11,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(morgan("tiny"));
-app.use(cors());
+app.use(
+  cors({
+    origin:
+      process.env.ENV === "dev"
+        ? process.env.DEV_ORIGIN
+        : process.env.PROD_ORIGIN,
+  })
+);
 
 app.use("/api/avatars", express.static(path.resolve("public/avatars")));
 app.use("/api", routes);
